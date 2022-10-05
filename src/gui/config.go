@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/mattn/go-gtk/gdk"
-	"github.com/mattn/go-gtk/gtk"
 )
 
 type Config struct {
@@ -18,8 +17,6 @@ func LoadConfig(conf string) (Config, error) {
 	//Format name:value
 	//search for width
 	var config Config
-
-	var width int
 	match := regexp.MustCompile(`width:(\d+)`)
 	strmatch := match.FindStringSubmatch(conf)
 	if len(strmatch) > 1 {
@@ -30,23 +27,23 @@ func LoadConfig(conf string) (Config, error) {
 			//convert to int
 			width, err := strconv.Atoi(strmatch[1])
 			if err != nil {
-				return output, err
+				return config, err
 			}
 			//get screen width
-			width = gdk.ScreenWidth() * width / 100
+			config.width = gdk.ScreenWidth() * width / 100
 		} else {
+			var err error
 			//remove px
 			strmatch[1] = strings.Replace(strmatch[1], "px", "", -1)
 			//convert to int
-			width, err := strconv.Atoi(strmatch[1])
+			config.width, err = strconv.Atoi(strmatch[1])
 			if err != nil {
-				return output, err
+				return config, err
 			}
 		}
 	}
 
 	//search for height
-	var height int
 	match = regexp.MustCompile(`height:(\d+)`)
 	strmatch = match.FindStringSubmatch(conf)
 	if len(strmatch) > 1 {
@@ -57,23 +54,23 @@ func LoadConfig(conf string) (Config, error) {
 			//convert to int
 			height, err := strconv.Atoi(strmatch[1])
 			if err != nil {
-				return output, err
+				return config, err
 			}
 			//get screen height
-			height = gdk.ScreenHeight() * height / 100
+			config.height = gdk.ScreenHeight() * height / 100
 		} else {
+			var err error
 			//remove px
 			strmatch[1] = strings.Replace(strmatch[1], "px", "", -1)
 			//convert to int
-			height, err := strconv.Atoi(strmatch[1])
+			height, err = strconv.Atoi(strmatch[1])
 			if err != nil {
-				return output, err
+				return config, err
 			}
 		}
 	}
 
 	//search for x position
-	var x int
 	match = regexp.MustCompile(`x:(\d+)`)
 	strmatch = match.FindStringSubmatch(conf)
 	if len(strmatch) > 1 {
@@ -84,23 +81,23 @@ func LoadConfig(conf string) (Config, error) {
 			//convert to int
 			x, err := strconv.Atoi(strmatch[1])
 			if err != nil {
-				return output, err
+				return config, err
 			}
 			//get screen width
-			x = gdk.ScreenWidth() * x / 100
+			config.x = gdk.ScreenWidth() * x / 100
 		} else {
+			var err error
 			//remove px
 			strmatch[1] = strings.Replace(strmatch[1], "px", "", -1)
 			//convert to int
-			x, err := strconv.Atoi(strmatch[1])
+			config.x, err = strconv.Atoi(strmatch[1])
 			if err != nil {
-				return output, err
+				return config, err
 			}
 		}
 	}
 
 	//search for y position
-	var y int
 	match = regexp.MustCompile(`y:(\d+)`)
 	strmatch = match.FindStringSubmatch(conf)
 	if len(strmatch) > 1 {
@@ -111,26 +108,21 @@ func LoadConfig(conf string) (Config, error) {
 			//convert to int
 			y, err := strconv.Atoi(strmatch[1])
 			if err != nil {
-				return output, err
+				return config, err
 			}
 			//get screen height
-			y = gdk.ScreenHeight() * y / 100
+			config.y = gdk.ScreenHeight() * y / 100
 		} else {
+			var err error
 			//remove px
 			strmatch[1] = strings.Replace(strmatch[1], "px", "", -1)
 			//convert to int
-			y, err := strconv.Atoi(strmatch[1])
+			config.y, err = strconv.Atoi(strmatch[1])
 			if err != nil {
-				return output, err
+				return config, err
 			}
 		}
 	}
 
-	output.window.SetTitle("menu")
-
-	output.window.Connect("destroy", func() {
-		gtk.MainQuit()
-	})
-	output.window.ShowAll()
-	return output, nil
+	return config, nil
 }
