@@ -1,6 +1,6 @@
 package gui
 
-import "github.com/mattn/go-gtk/gtk"
+import "github.com/gotk3/gotk3/gtk"
 
 type Entry struct {
 	Info    string
