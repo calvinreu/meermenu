@@ -5,12 +5,23 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mattn/go-gtk/gdk"
+	"github.com/gotk3/gotk3/gdk"
 )
 
 type Config struct {
-	x, y, width, height int
+	X, Y, Width, Height int
+	Cssfile, Title      string
 }
+
+//default config
+const (
+	DEFAULT_X      = 0
+	DEFAULT_Y      = 0
+	DEFAULT_WIDTH  = 800
+	DEFAULT_HEIGHT = 600
+	DEFAULT_CSS    = "default.css"
+	DEFAULT_TITLE  = "meermenu"
+)
 
 // LoadConfig from string out of conf file
 func LoadConfig(conf string) (Config, error) {
@@ -30,17 +41,19 @@ func LoadConfig(conf string) (Config, error) {
 				return config, err
 			}
 			//get screen width
-			config.width = gdk.ScreenWidth() * width / 100
+			config.Width = gdk.ScreenWidth() * width / 100
 		} else {
 			var err error
 			//remove px
 			strmatch[1] = strings.Replace(strmatch[1], "px", "", -1)
 			//convert to int
-			config.width, err = strconv.Atoi(strmatch[1])
+			config.Width, err = strconv.Atoi(strmatch[1])
 			if err != nil {
 				return config, err
 			}
 		}
+	}else{
+		
 	}
 
 	//search for height
@@ -57,13 +70,13 @@ func LoadConfig(conf string) (Config, error) {
 				return config, err
 			}
 			//get screen height
-			config.height = gdk.ScreenHeight() * height / 100
+			config.Height = gdk.ScreenHeight() * height / 100
 		} else {
 			var err error
 			//remove px
 			strmatch[1] = strings.Replace(strmatch[1], "px", "", -1)
 			//convert to int
-			height, err = strconv.Atoi(strmatch[1])
+			config.Height, err = strconv.Atoi(strmatch[1])
 			if err != nil {
 				return config, err
 			}
@@ -84,13 +97,13 @@ func LoadConfig(conf string) (Config, error) {
 				return config, err
 			}
 			//get screen width
-			config.x = gdk.ScreenWidth() * x / 100
+			config.X = gdk.ScreenWidth() * x / 100
 		} else {
 			var err error
 			//remove px
 			strmatch[1] = strings.Replace(strmatch[1], "px", "", -1)
 			//convert to int
-			config.x, err = strconv.Atoi(strmatch[1])
+			config.X, err = strconv.Atoi(strmatch[1])
 			if err != nil {
 				return config, err
 			}
@@ -111,17 +124,33 @@ func LoadConfig(conf string) (Config, error) {
 				return config, err
 			}
 			//get screen height
-			config.y = gdk.ScreenHeight() * y / 100
+			config.Y = gdk.ScreenHeight() * y / 100
 		} else {
 			var err error
 			//remove px
 			strmatch[1] = strings.Replace(strmatch[1], "px", "", -1)
 			//convert to int
-			config.y, err = strconv.Atoi(strmatch[1])
+			config.Y, err = strconv.Atoi(strmatch[1])
 			if err != nil {
 				return config, err
 			}
 		}
+	}
+
+	//search for css file
+	match = regexp.MustCompile(`css:(\S+)`)
+	strmatch = match.FindStringSubmatch(conf)
+	if len(strmatch) > 1 {
+		config.Cssfile = strmatch[1]
+	}else
+
+	//search for title
+	match = regexp.MustCompile(`title:(\S+)`)
+	strmatch = match.FindStringSubmatch(conf)
+	if len(strmatch) > 1 {
+		config.Title = strmatch[1]
+	}else{
+		config.Title = "meermenu"
 	}
 
 	return config, nil
