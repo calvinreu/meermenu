@@ -13,10 +13,10 @@ type Config struct {
 	Cssfile, Title      string
 }
 
-//default config
+// default config
 const (
-	DEFAULT_X      = 0
-	DEFAULT_Y      = 0
+	DEFAULT_X      = 500
+	DEFAULT_Y      = 500
 	DEFAULT_WIDTH  = 800
 	DEFAULT_HEIGHT = 600
 	DEFAULT_CSS    = "default.css"
@@ -28,6 +28,20 @@ func LoadConfig(conf string) (Config, error) {
 	//Format name:value
 	//search for width
 	var config Config
+	//get default screen
+	screen, err := gdk.ScreenGetDefault()
+	if err != nil {
+		return config, err
+	}
+
+	//set default values
+	config.X = DEFAULT_X
+	config.Y = DEFAULT_Y
+	config.Width = DEFAULT_WIDTH
+	config.Height = DEFAULT_HEIGHT
+	config.Cssfile = DEFAULT_CSS
+	config.Title = DEFAULT_TITLE
+
 	match := regexp.MustCompile(`width:(\d+)`)
 	strmatch := match.FindStringSubmatch(conf)
 	if len(strmatch) > 1 {
@@ -41,7 +55,7 @@ func LoadConfig(conf string) (Config, error) {
 				return config, err
 			}
 			//get screen width
-			config.Width = gdk.ScreenWidth() * width / 100
+			config.Width =  * width / 100
 		} else {
 			var err error
 			//remove px
@@ -52,8 +66,6 @@ func LoadConfig(conf string) (Config, error) {
 				return config, err
 			}
 		}
-	}else{
-		
 	}
 
 	//search for height
@@ -142,15 +154,13 @@ func LoadConfig(conf string) (Config, error) {
 	strmatch = match.FindStringSubmatch(conf)
 	if len(strmatch) > 1 {
 		config.Cssfile = strmatch[1]
-	}else
+	}
 
 	//search for title
 	match = regexp.MustCompile(`title:(\S+)`)
 	strmatch = match.FindStringSubmatch(conf)
 	if len(strmatch) > 1 {
 		config.Title = strmatch[1]
-	}else{
-		config.Title = "meermenu"
 	}
 
 	return config, nil
