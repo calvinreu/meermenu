@@ -9,18 +9,19 @@ import (
 )
 
 type Config struct {
-	X, Y, Width, Height int
-	Cssfile, Title      string
+	X, Y, Width, Height, Monitor int
+	Cssfile, Title               string
 }
 
 // default config
 const (
-	DEFAULT_X      = 500
-	DEFAULT_Y      = 500
-	DEFAULT_WIDTH  = 800
-	DEFAULT_HEIGHT = 600
-	DEFAULT_CSS    = "default.css"
-	DEFAULT_TITLE  = "meermenu"
+	DEFAULT_X       = 500
+	DEFAULT_Y       = 500
+	DEFAULT_WIDTH   = 800
+	DEFAULT_HEIGHT  = 600
+	DEFAULT_MONITOR = 0
+	DEFAULT_CSS     = "default.css"
+	DEFAULT_TITLE   = "meermenu"
 )
 
 // LoadConfig from string out of conf file
@@ -29,7 +30,7 @@ func LoadConfig(conf string) (Config, error) {
 	//search for width
 	var config Config
 	//get default screen
-	screen, err := gdk.ScreenGetDefault()
+	display, err := gdk.DisplayGetDefault()
 	if err != nil {
 		return config, err
 	}
@@ -41,21 +42,40 @@ func LoadConfig(conf string) (Config, error) {
 	config.Height = DEFAULT_HEIGHT
 	config.Cssfile = DEFAULT_CSS
 	config.Title = DEFAULT_TITLE
+	config.Monitor = DEFAULT_MONITOR
 
-	match := regexp.MustCompile(`width:(\d+)`)
+	//get monitor number
+	match := regexp.MustCompile(`monitor:\s*(\d+)`)
 	strmatch := match.FindStringSubmatch(conf)
+	if len(strmatch) > 1 {
+		config.Monitor, err = strconv.Atoi(strmatch[1])
+		if err != nil {
+			return config, err
+		}
+	}
+
+	monitor, err := display.GetMonitor(config.Monitor)
+	if err != nil {
+		return config, err
+	}
+
+	//get monitor size
+	width, height := monitor.GetGeometry().GetWidth(), monitor.GetGeometry().GetHeight()
+
+	match = regexp.MustCompile(`width:(\d+)`)
+	strmatch = match.FindStringSubmatch(conf)
 	if len(strmatch) > 1 {
 		//check if width is in % or px
 		if strings.Contains(strmatch[1], "%") {
 			//format width
 			strmatch[1] = strings.Replace(strmatch[1], "%", "", -1)
 			//convert to int
-			width, err := strconv.Atoi(strmatch[1])
+			config.Width, err = strconv.Atoi(strmatch[1])
 			if err != nil {
 				return config, err
 			}
 			//get screen width
-			config.Width =  * width / 100
+			config.Width = config.Width * width / 100
 		} else {
 			var err error
 			//remove px
@@ -77,12 +97,12 @@ func LoadConfig(conf string) (Config, error) {
 			//format height
 			strmatch[1] = strings.Replace(strmatch[1], "%", "", -1)
 			//convert to int
-			height, err := strconv.Atoi(strmatch[1])
+			config.Height, err = strconv.Atoi(strmatch[1])
 			if err != nil {
 				return config, err
 			}
 			//get screen height
-			config.Height = gdk.ScreenHeight() * height / 100
+			config.Height = config.Height * height / 100
 		} else {
 			var err error
 			//remove px
@@ -109,7 +129,7 @@ func LoadConfig(conf string) (Config, error) {
 				return config, err
 			}
 			//get screen width
-			config.X = gdk.ScreenWidth() * x / 100
+			config.X = width * x / 100
 		} else {
 			var err error
 			//remove px
@@ -136,7 +156,7 @@ func LoadConfig(conf string) (Config, error) {
 				return config, err
 			}
 			//get screen height
-			config.Y = gdk.ScreenHeight() * y / 100
+			config.Y = height * y / 100
 		} else {
 			var err error
 			//remove px
